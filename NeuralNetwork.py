@@ -21,10 +21,23 @@ class NeuralNetwork(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
 
-device = "cuda"
-model = NeuralNetwork().to(device)
-print(model)
+device = ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
+model = NeuralNetwork().to(device)
+model.load_state_dict(torch.load("model.pth"))
+
+classes = [
+    "T-shirt/top",
+    "Trouser",
+    "Pullover",
+    "Dress",
+    "Coat",
+    "Sandal",
+    "Shirt",
+    "Sneaker",
+    "Bag",
+    "Ankle boot",
+]
 
 trainingData = datasets.FashionMNIST(
     root="data",
@@ -83,11 +96,26 @@ def test(dataloader, model, loss_fn):
     print(f"Test error: \n Accuracy: {100*correct:>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
 def learn():
-    epochs = 5
+    epochs = 2
     for t in range(epochs):
         print(f"Epoch {t + 1}\n-------------------------------------")
         train(trainDataloader, model, loss_fn, optimizer)
         test(testDataloader, model, loss_fn)
     print("Done!")
 
+def saveModel():
+    torch.save(model.state_dict(), "model.pth")
+    print("model saved to model.pth")
+
+def evaluate():
+    x, y = testData[0][0], testData[0][1]
+    with torch.no_grad():
+        x = x.to(device)
+        pred = model(x)
+        predicted, actual = classes[pred[0].argmax(0)], classes[y]
+        print(f'Predicted: "{predicted}", Actual: "{actual}"')
+
 learn()
+evaluate()
+saveModel()
+
