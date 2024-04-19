@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  image-analysis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+  # volumes:
+  #   - '.:/app'  
